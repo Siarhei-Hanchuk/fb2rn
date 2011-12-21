@@ -17,11 +17,11 @@ bool procfile(char* oldname, char *book, char *params, bool Or,bool Oind, bool O
     char *newnamet=new char[256];memset(newnamet,0,256);
     int y=0;
     int l=strlen(params);
-    if(l==0){strcpy(params,"-Pn f - t");l=strlen(params);}
+    if(l==0){strcpy(params,"n f - t");l=strlen(params);}
     char *tmp=getPath(oldname);
     strcpy(newname,tmp);
     delete[] tmp;
-    for(int i=2;i<l;i++){
+    for(int i=0;i<l;i++){
         if(strchr(tags,params[i])==NULL){y=strlen(newnamet);newnamet[y]=params[i];}
         else{
             switch(params[i]){
@@ -111,12 +111,12 @@ bool procfile(char* oldname, char *book, char *params, bool Or,bool Oind, bool O
 void printhelp()
 {
     cout<<"FB2 books renamer\n"
-    "'fb2rn <dir> -P<params> -<options>'\n"
+    "'fb2rn <dir> -<options> <params>'\n"
     "Программа предназначена для массового переименования файлов fb2(электронных книг) по виду \"Имя и фамилия автора - Название книги\"(или др.)\n"
-    "Нужно задать папку для с книгами, например \"./fb2rn /home/user/books\" или \"fb2rn ~/Книги\\ 2/\"\n"
+    "Нужно задать папку для с книгами, например \"fb2rn /home/user/books\" или \"fb2rn .\"\n"
     "Так же можно задать, как переименовывать файлы например \"серия - название\" или \"Фамилия автора_серия_название\" и так далее\n"
-    "Например 'fb2rn -Pf\\ -\\ n(s) ~/books/' файлы будут переименованы как 'фамилия - название(серия).fb2'\n"
-    "Параметры переименования(-P<params>)\n"
+    "Например 'fb2rn f\\ -\\ n(s) ~/books/ -e' файлы будут переименованы как 'фамилия - название(серия).fb2' и не будут выведены ошибки\n"
+    "Параметры переименования(<params>)\n"
     " f - фамилия автора\n"
     " n - имя автора\n"
     " t - название книги\n"
@@ -134,7 +134,7 @@ void printhelp()
 
 void printshlp(bool v=false)
 {
-    cout<<"FB2 books renamer 0.2.6\n";
+    cout<<"FB2 books renamer 0.2.7\n";
     if(!v)cout<<"Пропущен операнд. Попробуйте fb2rn --help для получения подробной информации\n";
 }
 
@@ -173,13 +173,13 @@ int main(int argc, char *argv[])
     }
 
     for(int i=0; i<argc;i++){
-        if((argv[i][0]=='-')&&(argv[i][1]=='P')){
+        if((argv[i][0]!='/')&&(argv[i][0]!='.')&&(argv[i][0]!='-')){
             strcpy(params,argv[i]);
             break;
         }
     }
     for(int i=0; i<argc;i++){
-        if((argv[i][0]=='-')&&(argv[i][1]!='P')){
+        if(argv[i][0]=='-'){
             strcpy(options,argv[i]);
         }
     }
