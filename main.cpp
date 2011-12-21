@@ -110,7 +110,7 @@ bool procfile(char* oldname, char *book, char *params, bool Or,bool Oind, bool O
 
 void printhelp()
 {
-    cout<<"FB2rename 0.2.5\n"
+    cout<<"FB2 books renamer\n"
     "'fb2rn <dir> -P<params> -<options>'\n"
     "Программа предназначена для массового переименования файлов fb2(электронных книг) по виду \"Имя и фамилия автора - Название книги\"(или др.)\n"
     "Нужно задать папку для с книгами, например \"./fb2rn /home/user/books\" или \"fb2rn ~/Книги\\ 2/\"\n"
@@ -134,7 +134,7 @@ void printhelp()
 
 void printshlp(bool v=false)
 {
-    cout<<"FB2 books renamer 0.2.5\n";
+    cout<<"FB2 books renamer 0.2.6\n";
     if(!v)cout<<"Пропущен операнд. Попробуйте fb2rn --help для получения подробной информации\n";
 }
 
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 
     bool b=false;
     for(int i=1; i<argc;i++){
-        if(argv[i][0]=='/'){
+        if(argv[i][0]=='/' || argv[i][0]=='.'){
             strcpy(dir,argv[i]);
             b=true;
         }
