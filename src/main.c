@@ -1,122 +1,115 @@
-#include <iostream>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <getopt.h>
 
 #include "functions.h"
-#include "charstr.h"
-#include "cp.h"
 #include "FB2.h"
 
-using namespace std;
-
-bool procfile(char* oldname, char *book, char *params, bool Or,bool Oind, bool Onoerr,int &err,int &nr,int &rn)
+_Bool procfile(char* oldname, char *book, char *params, _Bool Or,_Bool Oind, _Bool Onoerr,int par[3])
 {
     char tags[13]="nftmglpyi";
-    char *newname=new char[256*2+20];
-    char *newnamet=new char[256];memset(newnamet,0,256);
+    char *newname=(char *)malloc(sizeof(char)*(256*2+20));
+    char *newnamet=(char *)malloc(sizeof(char)*(256));
+    memset(newnamet,0,256);
     int y=0;
     int l=strlen(params);
-    if(l==0){strcpy(params,"n f - t");l=strlen(params);}
-    char *tmp=getPath(oldname);
+    if(l==0){
+        strcpy(params,"n f - t");
+        l=strlen(params);
+    }
+    char *tmp=getFilepath_fromFullname(oldname);
     strcpy(newname,tmp);
-    delete[] tmp;
+    free(tmp);
+    tmp=NULL;
     for(int i=0;i<l;i++){
-        if(strchr(tags,params[i])==NULL){y=strlen(newnamet);newnamet[y]=params[i];}
+        if(strchr(tags,params[i])==NULL){
+            y=strlen(newnamet);
+            newnamet[y]=params[i];
+        }
         else{
             switch(params[i]){
-                case 'n':
-                    tmp=xml_GetParam("<first-name>",book);
-                    strcat(newnamet,tmp);
-                    delete[] tmp;
-                    break;
-                case 'f':
-                    tmp=xml_GetParam("<last-name>",book);
-                    strcat(newnamet,tmp);
-                    delete[] tmp;
-                    break;
-                case 't':
-                    tmp=xml_GetParam("<book-title>",book);
-                    strcat(newnamet,tmp);
-                    delete[] tmp;
-                    break;
-                case 'm':
-                    tmp=xml_GetParam("<middle-name>",book);
-                    strcat(newnamet,tmp);
-                    delete[] tmp;
-                    break;
-                case 'g':
-                    tmp=xml_GetParam("<genre>",book);
-                    strcat(newnamet,tmp);
-                    delete[] tmp;
-                    break;
-                case 'l':
-                    tmp=xml_GetParam("<lang>",book);
-                    strcat(newnamet,tmp);
-                    delete[] tmp;
-                    break;
-                case 'p':
-                    tmp=xml_GetParam("<publisher>",book);
-                    strcat(newnamet,tmp);
-                    delete[] tmp;
-                    break;
-                case 'y':
-                    tmp=xml_GetParam("<year>",book);
-                    strcat(newnamet,tmp);
-                    delete[] tmp;
-                    break;
-                case 'i':
-                    tmp=xml_GetParam("<isbn>",book);
-                    strcat(newnamet,tmp);
-                    delete[] tmp;
-                    break;
-
+            case 'n':
+                tmp=xml_GetParam("<first-name>",book);
+                break;
+            case 'f':
+                tmp=xml_GetParam("<last-name>",book);
+                break;
+            case 't':
+                tmp=xml_GetParam("<book-title>",book);
+                break;
+            case 'm':
+                tmp=xml_GetParam("<middle-name>",book);
+                break;
+            case 'g':
+                tmp=xml_GetParam("<genre>",book);
+                break;
+            case 'l':
+                tmp=xml_GetParam("<lang>",book);
+                break;
+            case 'p':
+                tmp=xml_GetParam("<publisher>",book);
+                break;
+            case 'y':
+                tmp=xml_GetParam("<year>",book);
+                break;
+            case 'i':
+                tmp=xml_GetParam("<isbn>",book);
+                break;
+            }
+            if(tmp!=NULL){
+                strcat(newnamet,tmp);
+                free(tmp);
             }
         }
     }
     strcat(newname,newnamet);
     strcat(newname,".fb2");
     if(strcmp(newname,oldname)==0){
-        if(Oind){cout<<"Имена одинаковы:"<<getFilename(oldname)<<endl;}
-        nr++;
-        delete[] newname;
-        delete[] newnamet;
-        return false;
+        if(Oind)
+            printf("Имена одинаковы:%s\n",getFilename_fromFullname(oldname));
+        par[1]++;
+        free(newname);
+        free(newnamet);
+        return 0;
     }
     if(fileexist(newname)){
-        if(!Onoerr){cout<<"Ошибка: файл "<<newname<<" уже существует"<<endl;}
-        err++;
-        delete[] newname;
-        delete[] newnamet;
-        return false;
+        if(!Onoerr)
+            printf("Ошибка: файл %s уже существует\n",newname);
+        par[0]++;
+        free(newname);
+        free(newnamet);
+        return 0;
     }
-
-    if(Or){cout<<getFilename(oldname)<<" -> "<<getFilename(newname)<<endl;}
-    newname=delescape(newname);
-    oldname=delescape(oldname);
-    char *cmd=new char[1024];
+    if(Or){
+        printf("%s -> %s\n",getFilename_fromFullname(oldname),getFilename_fromFullname(newname));
+    }
+    newname=delescape(newname,1);
+    oldname=delescape(oldname,1);
+    char *cmd=(char *)malloc(sizeof(char)*(1024));
     strcpy(cmd,"mv ");
     strcat(cmd,oldname);
     strcat(cmd," ");
     strcat(cmd,newname);
     system(cmd);
-    delete[] cmd;
-    delete[] newname;
-    delete[] newnamet;
-    rn++;
-    return true;
+    free(cmd);
+    free(newname);
+    free(newnamet);
+    par[2]++;
+    return 1;
 
 }
 
 void printhelp()
 {
-    cout<<"FB2 books renamer\n"
-    "'fb2rn <dir> -<options> <params>'\n"
-    "Программа предназначена для массового переименования файлов fb2(электронных книг) по виду \"Имя и фамилия автора - Название книги\"(или др.)\n"
+    printf("FB2 books renamer\n"
+    "'fb2rn [dir] [options] [--mask=mask]'\n"
+    "Программа предназначена для массового переименования файлов fb2(электронных книг) по виду"
+           "\"Имя и фамилия автора - Название книги\"(или др.)\n"
     "Нужно задать папку для с книгами, например \"fb2rn /home/user/books\" или \"fb2rn .\"\n"
-    "Так же можно задать, как переименовывать файлы например \"серия - название\" или \"Фамилия автора_серия_название\" и так далее\n"
-    "Например 'fb2rn f\\ -\\ n(s) ~/books/ -e' файлы будут переименованы как 'фамилия - название(серия).fb2' и не будут выведены ошибки\n"
-    "Параметры переименования(<params>)\n"
+    "Так же можно задать маску для переименовывания файлов по виду \"серия - название\" или \"Фамилия автора_серия_название\" и так далее\n"
+    "Например 'fb2rn --mask=f\\ -\\ n(s) ~/books/ -e' файлы будут переименованы как 'фамилия - название(серия).fb2' и не будут выведены ошибки\n"
+    "Маска([mask])\n"
     " f - фамилия автора\n"
     " n - имя автора\n"
     " t - название книги\n"
@@ -126,94 +119,108 @@ void printhelp()
     " p - издатель\n"
     " y - год\n"
     " i - isbn\n"
-    "Опции:\n"
-    " r -Выводить информацию о переименовании каждого файла\n"
-    " e -Не выводить информацию об ошибках\n"
-    " i -Выволить информацию о совпадении имён\n";
+    "Аргументы:\n"
+    " --help - Вывести эту информацию\n"
+    " --version - Вывести версию\n"
+    " --renamed-files(-r) -Выводить информацию о переименовании каждого файла\n"
+    " --noerror(-e) -Не выводить информацию об ошибках\n"
+    " --match-names(-i) -Выволить информацию о совпадении имён\n"
+    " --mask(-m) - Маска для переименования файла\n");
 }
 
-void printshlp(bool v=false)
-{
-    cout<<"FB2 books renamer 0.2.7\n";
-    if(!v)cout<<"Пропущен операнд. Попробуйте fb2rn --help для получения подробной информации\n";
-}
+const struct option long_options[] = {
+		{"match-names",no_argument,NULL,'i'},
+		{"noerror",no_argument,NULL,'e'},
+		{"renamed-files",no_argument,NULL,'r'},
+		{"help",no_argument,NULL,'h'},
+		{"version",no_argument,NULL,'v'},
+		{"mask",required_argument,NULL,'m'},
+		{"filter",required_argument,NULL,'m'},
+		{NULL,0,NULL,0}
+	};
 
 int main(int argc, char *argv[])
 {
-    int rn=0, nr=0, ne=0;
-    if(argc>1){
-        if(strcmp(argv[1],"--help")==0){
+    _Bool Onoerr=0, Or=0, Oind=0;
+    char mask[100]={0};
+    char findfilter[100];
+    strcpy(findfilter,"*.fb2");
+    char c;
+    int option_index;
+    while ((c = getopt_long (argc, argv, "eirf", long_options, &option_index))!=-1){
+        switch(c){
+        case 'h':
             printhelp();
-            return 2;
-        }
-        if(strcmp(argv[1],"--version")==0){
-            printshlp(true);
-            return 2;
+            return 0;
+        case 'v':
+            printf("FB2 books renamer 0.3.0\n");
+            return 0;
+        case 'e':
+            Onoerr=1;
+            break;
+        case 'r':
+            Or=1;
+            break;
+        case 'i':
+            Oind=1;
+            break;
+        case 'm':
+            strcpy(mask,optarg);
+            break;
+        case 'd':
+            strcpy(findfilter,optarg);
+            break;
+        default:
+            fprintf (stderr, ("Try '%s --help' for more information.\n"), "fb2rn");
+            return 0;
         }
     }
-
-    char *dir=new char[256];memset(dir,0,256);
-    char params[100]={0};
-    char options[100]={0};
-
-    bool b=false;
+    char *dir=(char *)malloc(sizeof(char)*(256));
+    memset(dir,0,256);
+    _Bool b=0;
     for(int i=1; i<argc;i++){
         if(argv[i][0]=='/' || argv[i][0]=='.'){
             strcpy(dir,argv[i]);
-            b=true;
+            b=1;
         }
     }
-    char *d=delescape(dir);
-    delete []dir;
+    char *d=delescape(dir,1);
+    free(dir);
     dir=d;
         if(!b){
-        printshlp();
-        delete[]dir;
-        return 1;
+        fprintf (stderr, ("Try '%s --help' for more information.\n"), "fb2rn");
+        return 0;
     }
-
-    for(int i=0; i<argc;i++){
-        if((argv[i][0]!='/')&&(argv[i][0]!='.')&&(argv[i][0]!='-')){
-            strcpy(params,argv[i]);
-            break;
-        }
-    }
-    for(int i=0; i<argc;i++){
-        if(argv[i][0]=='-'){
-            strcpy(options,argv[i]);
-        }
-    }
-
-    bool Onoerr=false, Or=false, Oind=false;
-    if(strchr(options,'e')){Onoerr=true;}
-    if(strchr(options,'i')){Oind=true;}
-    if(strchr(options,'r')){Or=true;}
-
     char *book;
-    char cmd[256];memset(cmd,0,256);
+    char cmd[256];
+    memset(cmd,0,256);
     FILE *fr;
     snprintf(cmd, sizeof(cmd), "find %s -type f -name \"*.fb2\"", dir);
-    delete[] dir;
+    free(dir);
+    int par[3]={0,0,0};
     fr=popen(cmd,"r");
     if(fr==NULL)
     {
          perror("Shell execution error");
          return -1;
     }
-    char tmp[512];memset(tmp,0,512);
+    char tmp[512];
+    memset(tmp,0,512);
     while(fgets(tmp,sizeof(tmp),fr)!=NULL)
     {
         tmp[strlen(tmp)-1]=0;
-        int err=FB2Load(tmp,book);
+        int err=FB2Load(tmp,&book);
         if(err!=0){
-            if(Onoerr){cout<<"Ошибка код#"<<err<<":"<<getFilename(tmp)<<endl;}
-            ne++;
+            if(Onoerr){
+                printf("Error #,%d:%s\n",err,getFilename_fromFullname(tmp));
+            }
+            par[0]++;
             continue;
         }
-       procfile(tmp,book,params,Or,Oind,Onoerr,ne,nr,rn);
-       delete[] book;
+        procfile(tmp,book,mask,Or,Oind,Onoerr,par);
+        free(book);
     }
     pclose(fr);
-    cout<<"Переимновано:"<<rn<<" Совпадающие имена:"<<nr<<" Ошибка:"<<ne<<endl;
+    printf("Renamed:%d Matching names:%d Failed:%d\n",par[2],par[1],par[0]);
     return 0;
 }

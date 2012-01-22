@@ -1,10 +1,10 @@
-#include  <sys/stat.h>
+#include <sys/stat.h>
 #include <string.h>
+#include <stdlib.h>
 
-char *getPath(char *FullName)
-//!Получение пути из полного имени файла
+char *getFilepath_fromFullname(char *FullName)
 {
-	char *r=new char[256];
+	char *r=(char *)malloc(sizeof(char)*(256));
 	memset(r,0,256);
 	int l=strlen(FullName);
 	for(int i=l;i>0;i--){
@@ -21,12 +21,13 @@ char *getPath(char *FullName)
 	return r;
 }
 
-char *getFilename(char *n)
-//!Получние имени файла из полного имени
+char *getFilename_fromFullname(char *n)
 {
     int l=strlen(n);
-    if(n[l]=='/'){return 0;}
-    char *r=new char[l];
+    if(n[l]=='/'){
+        return 0;
+    }
+    char *r=(char *)malloc(sizeof(char)*(l));
     memset(r,0,l);
     int i=0;
     int e=0;
@@ -37,32 +38,36 @@ char *getFilename(char *n)
     return r;
 }
 
-char *delescape(char *str)
-//! Установка перез пробелами и др символа '\'
-//! Перед пробелом '\', Замена перехода на новую строку на пробел
+char *delescape(char *str,_Bool newline)
 {
-    //char smbls[100];
-    //strcpy(smbls,"\"\\\')( \13\10")
-
+    char escSymb[]={'"','\\','\'',')','(',' ',13,10};
     int l=strlen(str);
-    char *n=new char[l*2];
+    char *n=(char *)malloc(sizeof(char)*(l*2));
     memset(n,0,l*2);
     int e=0;
     for(int i=0;i<l;i++){
-        if((str[i]=='"')||(str[i]=='\\')||(str[i]=='\'')||(str[i]==')')||(str[i]=='(')||(str[i]==' ')||((str[i]==13)||(str[i]==10))){
+        if(strchr(escSymb,str[i])!=NULL){
             n[e]='\\';
             n[e+1]=str[i];
-            if((n[e+1]==10)||(n[e+1]==13)){n[e+1]=' ';}
+            if((newline)&&
+               ((n[e+1]==10)||(n[e+1]==13))){
+                    n[e+1]=' ';
+                }
             e+=2;
-        }else
-        {n[e]=str[i];e++;}
+        }else{
+            n[e]=str[i];
+            e++;
+        }
     }
     return n;
 }
 
-bool fileexist(char *path)
+_Bool fileexist(char *path)
 {
     struct stat filest;
 	int s=stat(path, &filest);
-	if(s==0){return true;}else{return false;}
+	if(s==0){
+	    return 1;
+    }
+    return 0;
 }

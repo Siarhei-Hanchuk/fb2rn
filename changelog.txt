@@ -1,0 +1,11 @@
+0.2.6
+ The path can start with a symbol '.'
+
+0.2.7
+ Now options begin with '-' and the parameters without the '-' and no 'P'
+
+0.3.0
+ Pure C
+ Optimization
+ Options are processed through gnuopt.h
+ The mask is given by --mask =
