@@ -33,24 +33,23 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="FB2.cpp" />
+		<Unit filename="FB2.c" />
 		<Unit filename="FB2.h">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Info.txt" />
-		<Unit filename="charstr.cpp" />
+		<Unit filename="charstr.c" />
 		<Unit filename="charstr.h">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="cp.cpp" />
+		<Unit filename="cp.c" />
 		<Unit filename="cp.h">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="functions.cpp" />
+		<Unit filename="functions.c" />
 		<Unit filename="functions.h">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="main.cpp">
+		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>
